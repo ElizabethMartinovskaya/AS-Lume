@@ -1,5 +1,5 @@
 <?php
-require_once 'sql_function.php';
+require_once 'sql_functions.php';
 require_once 'upload_photos.php';
 if (isset($_POST['form'])){
     if ($_POST['form']=='user_setting'){
@@ -27,7 +27,7 @@ if (isset($_POST['form'])){
             Add_stock($_POST['stock_name'],$_POST['stock_type'],$_POST['id_author'],$_POST['description_stock'],$_POST['date_begin'],$_POST['date_end'],$_POST['prize_id']);
         }
         elseif($_POST['current_li']=="Фотография"){
-            Add_photo($_POST['users_name'],$_POST['type_user'],$_POST['Image_src'],$_POST['width_image'],$_POST['height_image'],$_POST['Image_src'],$_POST['description_image'],$_POST['Source'],$_POST['type_data'],$_POST['image_N'],$_POST['image_E']);
+            Add_photo($_POST['Image_src'],$_POST['users_name'],$_POST['type_user'],$_POST['description_image'],$_POST['width_image'],$_POST['height_image'],$_POST['Source'],$_POST['type_data'],$_POST['image_N'],$_POST['image_E']);
         }
     }
 }
@@ -141,35 +141,6 @@ function Add_stock($stock_name,$stock_type,$id_author,$description_stock,$date_b
         echo('Акция добавлена');
     }
 }
-function Delete_item($current_li, $id){
-    if($current_li=="Акции"){
-        $delete_item = sql_update("DELETE FROM `stock` WHERE `id_user`='$id'");
-        if (!$delete_item){
-            echo "Ошибка! Акция не удалена";
-        }
-        else{
-            echo("Акция удалена");
-        }
-    }
-    elseif ($current_li=="Фотографии"){
-        $delete_item = sql_update("DELETE FROM `image` WHERE `id_user`='$id'");
-        if (!$delete_item){
-            echo "Ошибка! Фотография не удалена";
-        }
-        else{
-            echo("Фотография удалена");
-        }
-    }
-    else{
-        $delete_item = sql_update("DELETE FROM `users` WHERE `id_user`='$id'");
-        if (!$delete_item){
-            echo "Ошибка! Пользователь не удален";
-        }
-        else{
-            echo("Пользователь удалён");
-        }
-    }
-}
 
 function Edit_user($id_item){
     $id_city = get_id_city($_POST['city_name'],$_POST['country_name']);
@@ -205,6 +176,37 @@ function Edit_company($id_item)
     else
         echo "Информация обновлена";
 }
+
+function Delete_item($current_li, $id){
+    if($current_li=="Акции"){
+        $delete_item = sql_update("DELETE FROM `stock` WHERE `id_user`='$id'");
+        if (!$delete_item){
+            echo "Ошибка! Акция не удалена";
+        }
+        else{
+            echo("Акция удалена");
+        }
+    }
+    elseif ($current_li=="Фотографии"){
+        $delete_item = sql_update("DELETE FROM `image` WHERE `id_user`='$id'");
+        if (!$delete_item){
+            echo "Ошибка! Фотография не удалена";
+        }
+        else{
+            echo("Фотография удалена");
+        }
+    }
+    else{
+        $delete_item = sql_update("DELETE FROM `users` WHERE `id_user`='$id'");
+        if (!$delete_item){
+            echo "Ошибка! Пользователь не удален";
+        }
+        else{
+            echo("Пользователь удалён");
+        }
+    }
+}
+
 function get_id_city($city_name, $country_name)
 {
     $id_country = sql_select("SELECT `id_country` FROM `country`

@@ -4,20 +4,17 @@ if (isset($_SESSION['id_Admin'])&&(isset($_SESSION['admin_name']))){
     echo "<script type='text/javascript' src='../js/JQuery.js'></script>";
     echo "<script type='text/javascript' src='../js/functions.js'></script>";
     echo "<script type='text/javascript' src='../js/jquery.validate.min.js'></script>";
-    echo "<script type='text/javascript' src='../js/AngularJS/angular.min.js'</script>";
-    echo "<script type='text/javascript' src='../js/AngularJS/angular-resource.min.js'></script>";
-    echo "<script type='text/javascript' src='../js/AngularJS.js'</script>";
     echo "<script type='text/javascript' src='../js/jquery-ui-1.12.1/jquery-ui.min.js'></script>";
     echo "<link href='../css/admin_style.css' rel='stylesheet' type='text/css'>";
     echo "<link href='../js/jquery-ui-1.12.1/jquery-ui.theme.min.css' rel='stylesheet' type='text/css'>";
     echo "<link href='../js/jquery-ui-1.12.1/jquery-ui.min.css' rel='stylesheet' type='text/css'>";
-    require_once 'sql_function.php';
+    require_once 'sql_functions.php';
     require_once 'functions.php';
     $last_visit = mysqli_fetch_assoc(sql_select("SELECT `last_visit` 
                                          FROM `admins` WHERE `id_Admin` = '{$_SESSION['id_Admin']}' 
                                          AND `admin_name` = '{$_SESSION['admin_name']}'"))['last_visit'] or die("Ошибка" . mysqli_error($db));
     echo "<!DOCTYPE html>
-          <html lang='ru' ng-app='LumeAngularJS'>
+          <html lang='ru'>
           <head>
                 <meta charset='UTF-8'>
                 <title>AS Lume</title>
@@ -52,7 +49,7 @@ if (isset($_SESSION['id_Admin'])&&(isset($_SESSION['admin_name']))){
                     <div class='block_info'>
                         <div class='header_info'>
                             <h1></h1>
-                            <div class='search' ng-controller='SearchController'></div>
+                            <div class='search'></div>
                             <div class='choose_menu'></div>    
                         </div>                   
                         <div class='list_info'></div>

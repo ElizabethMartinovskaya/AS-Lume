@@ -27,6 +27,9 @@ $(document).ready(function() {
                 $('.search').html(data);
                 var search_input = $(".search").find("input[type='search']");
                 var search_field = $("#search_select");
+                $(".search").on("search", function(e) {
+                    search(search_input, search_field,current_li);
+                });
                 $(search_input).keyup(function () {
                     search(search_input, search_field,current_li);
                 });
@@ -34,7 +37,7 @@ $(document).ready(function() {
                     search(search_input,search_field,current_li);
                 });
             });
-            $.post('../php/functions.php', "get_table_info="+current_li, function (data) {
+            $.post('../php/functions.php', "get_checkbox_list="+current_li, function (data) {
                 $('.choose_menu').html(data);
             });
             $.post('../php/functions.php', "current_li="+current_li+"&&form=user_setting", function (data) {
@@ -81,7 +84,7 @@ function select_list(current_select,id_form){
 
 function create_add_form(input_result, current_li){
     if (current_li=="Фотография"){
-        $('.list_info').html("<form id='add_item_form' action='../php/upload_photos.php' enctype='multipart/form-data'></form>");
+        $('.list_info').html("<form enctype='multipart/form-data' id='add_item_form' action='../php/upload_photos.php' method='post'></form>");
     }
     else{
         $('.list_info').html("<form id='add_item_form'></form>");
@@ -89,17 +92,47 @@ function create_add_form(input_result, current_li){
     $('.list_info form#add_item_form').html(input_result);
     $('.list_info form#add_item_form').append("<div class='form_item'><input type='submit' name='add_item' value='Добавить'></div>");
     $("#add_item_form").unbind('submit');
+    var file;
+    $('input[type=file]').change(function(){
+        file = this.files[0];
+    });
     $('#add_item_form').submit(function (sub) {
         sub.preventDefault();
-        $.post('../php/update_functions.php', $(this).serialize() + "&&form=add_item_form" + "&&current_li="+current_li, function(data){
-            $.post('../php/generation_item.php', "dialog_text="+data+"&&type=message", function(dialog_window) {
-                get_message(dialog_window);
-                if(data=="Пользователь добавлен" || data=="Компания добавлена" || data=="Фотография добавлена"){
-                    $('#add_item_form')[0].reset();
-                }
+        if (current_li=="Фотография"){
+            var form = $(this).serializeArray();
+            var formData = new FormData();
+            formData.append('Image_src', file);
+            for (var i=0; i < 4; i++){
+                formData.append(form[i].name, form[i].value);
+            }
+            $.ajax({
+                url: '../php/upload_photos.php',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(result_update) {
+                    console.log(result_update);
+                    $.post('../php/generation_item.php', "dialog_text="+result_update+"&&type=message", function(dialog_window) {
+                        get_message(dialog_window);
+                        if(result_update=="Фотография добавлена"){
+                            $('#add_item_form')[0].reset();
+                        }
+                    });
+                },
             });
-        })
-    });
+    }
+        else{
+            $.post('../php/update_functions.php', $(this).serialize()+"&&form=add_item_form"+"&&current_li="+current_li, function(result_update){
+                $.post('../php/generation_item.php', "dialog_text="+result_update+"&&type=message", function(dialog_window) {
+                    get_message(dialog_window);
+                    if(result_update=="Пользователь добавлен" || result_update=="Компания добавлена"){
+                        $('#add_item_form')[0].reset();
+                    }
+                });
+            })
+        }
+    })
 }
 function get_text_input(key,item) {
     return "<div class='form_item'><label for='input_" + key + "'>" + item + ":</label><input type='text' name=" + key + " id='input_" + key + "'></div>";
@@ -139,7 +172,7 @@ function data_query(current_checkbox){
         $('.list_cell.options').css('display','none');
     }
 }
-function ReturnIdForOperation(type_operation, current_li, id){
+function ReturnIdForOperation(type_operation, current_li, name){
     if(type_operation=='edit'){
         list['Пользователи'] = {
             'users_name': 'Имя',
@@ -157,13 +190,13 @@ function ReturnIdForOperation(type_operation, current_li, id){
             'country_name': 'Страна',
             'city_name': 'Город'
         };
-        $.post('../php/generation_item.php', 'create_edit_form=' +current_li+'&&id='+id+"&&list="+ JSON.stringify(list), function(data){
+        $.post('../php/generation_item.php', 'create_edit_form=' +current_li+'&&name='+name+"&&edit_list="+ JSON.stringify(list), function(data){
             $('.window').html(data);
             $('#click_edit')[0].click();
             setEvent('edit_form');
             $('#edit_form').submit(function (sub) {
                 sub.preventDefault();
-                $.post('../php/update_functions.php',$(this).serialize()+ '&&operation=edit_item'+'&&item_id='+id + '&&current_li=' + current_li, function (data) {
+                $.post('../php/update_functions.php',$(this).serialize()+ '&&operation=edit_item'+'&&item_id='+name+'&&current_li='+current_li, function (data) {
                     $.post('../php/generation_item.php', "dialog_text="+data+"&&type=message", function(dialog_window) {
                         get_message(dialog_window);
                     });
@@ -172,8 +205,8 @@ function ReturnIdForOperation(type_operation, current_li, id){
         })
     }
     else {
-        $.post('../php/generation_item.php', "dialog_text=Вы действительно хотите удалить пользователя с id="+id+"?"+"&&type=dialog", function(dialog_window) {
-            get_dialog(current_li, id, dialog_window);
+        $.post('../php/generation_item.php', "dialog_text=Вы действительно хотите удалить пользователя "+name+"?"+"&&type=dialog", function(dialog_window) {
+            get_dialog(current_li, name, dialog_window);
         });
     }
 }
@@ -275,7 +308,7 @@ function all_checkboxes(check_all) {
 
 function search (search_input, search_field, current_li) {
     if(search_input.val().length != 0) {
-        $.post('../php/functions.php', "search_items=" + search_input.val()+"&search_field="+search_field.val()+"&current_li_="+current_li, function (data) {
+        $.post('../php/functions.php', "search_items=" + encodeURIComponent(search_input.val())+"&search_field="+search_field.val()+"&current_li_="+current_li, function (data) {
             $(".list_info").html(data);
             all_checkboxes(true);
         })

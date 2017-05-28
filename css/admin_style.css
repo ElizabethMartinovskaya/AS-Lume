@@ -394,6 +394,9 @@ header a:hover{
     width: 300px;
     padding: 7px 10px 7px 10px;
 }
+.block_info form .form_item input[type='file']{
+    padding: 7px 0;
+}
 .block_info form .form_item input[type='submit']{
     margin-top: 20px;
     border: none;
