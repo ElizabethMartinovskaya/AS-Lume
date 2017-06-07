@@ -4,10 +4,13 @@ if (isset($_SESSION['id_Admin'])&&(isset($_SESSION['admin_name']))){
     echo "<script type='text/javascript' src='../js/JQuery.js'></script>";
     echo "<script type='text/javascript' src='../js/functions.js'></script>";
     echo "<script type='text/javascript' src='../js/jquery.validate.min.js'></script>";
-    echo "<script type='text/javascript' src='../js/jquery-ui-1.12.1/jquery-ui.min.js'></script>";
+    echo "<script type='text/javascript' src='../js/jquery-ui-1.12.1.custom/jquery-ui.min.js'></script>";
+    echo "<script type='text/javascript' src='http://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyAjO-NDOjxW4bfbkkMNNf9ddfDrsx6Vt4g'></script>";
     echo "<link href='../css/admin_style.css' rel='stylesheet' type='text/css'>";
-    echo "<link href='../js/jquery-ui-1.12.1/jquery-ui.theme.min.css' rel='stylesheet' type='text/css'>";
-    echo "<link href='../js/jquery-ui-1.12.1/jquery-ui.min.css' rel='stylesheet' type='text/css'>";
+    echo "<link href='../js/jquery-ui-1.12.1.custom/jquery-ui.theme.min.css' rel='stylesheet' type='text/css'>";
+    echo "<link href='../js/jquery-ui-1.12.1.custom/jquery-ui.min.css' rel='stylesheet' type='text/css'>";
+    echo "<link rel='icon' href='../res/logo.ico' type='image/png'>";
+    echo "<link rel='shortcut icon' href='../res/logo.ico' type='img/x-icon'>";
     require_once 'sql_functions.php';
     require_once 'functions.php';
     $last_visit = mysqli_fetch_assoc(sql_select("SELECT `last_visit` 
@@ -49,11 +52,12 @@ if (isset($_SESSION['id_Admin'])&&(isset($_SESSION['admin_name']))){
                     <div class='block_info'>
                         <div class='header_info'>
                             <h1></h1>
-                            <div class='search'></div>
-                            <div class='choose_menu'></div>    
+                            <div class='Search'></div>
+                            <div class='choose_menu'></div>                               
                         </div>                   
                         <div class='list_info'></div>
-                        <div class='window'></div>
+                        <div class='window'></div>               
+                        <a href='#overlay_map' class='overlay map' id='popup_map'></a><div id='map_canvas_view' class='popup map'><a class='close' title='Закрыть' href='#close'></a></div>
                     </div>
                 </section>
           </body>

@@ -69,7 +69,7 @@ header .auser_info p:last-child{
     color: #848589;
 }
 header a{
-    background: url('../img/btn_exit.png') no-repeat;
+    background: url('../res/btn_exit.png') no-repeat;
     background-size: cover;
     width: 80px;
     height: 80px;
@@ -131,28 +131,28 @@ header a:hover{
     margin: 0 10px;
     width: 30px;
     height: 30px;
-    background: url(../img/plus_icon.png) no-repeat;
+    background: url(../res/plus_icon.png) no-repeat;
 }
 .nav_menu li .view_menu_item.icon1{
-    background: url(../img/users_icon.png) no-repeat;
+    background: url(../res/users_icon.png) no-repeat;
 }
 .nav_menu li .view_menu_item.icon2{
     width: 50px;
-    background: url(../img/company_icon.png) no-repeat;
+    background: url(../res/company_icon.png) no-repeat;
 }
 .nav_menu li .view_menu_item.icon3{
     width: 50px;
     height: 50px;
-    background: url(../img/photos_icon.png) no-repeat;
+    background: url(../res/photos_icon.png) no-repeat;
 }
 .nav_menu li .view_menu_item.icon4{
-    background: url(../img/stock_icon.png) no-repeat;
+    background: url(../res/stock_icon.png) no-repeat;
 }
 .nav_menu li .view_menu_item.icon5{
-    background: url(../img/moderation_icon.png) no-repeat;
+    background: url(../res/moderation_icon.png) no-repeat;
 }
 .nav_menu li .view_menu_item.icon6{
-    background: url(../img/setting_icon.svg) no-repeat;
+    background: url(../res/setting_icon.svg) no-repeat;
 }
 .nav_menu li .view_menu_item.icon0,
 .nav_menu li .view_menu_item.icon1,
@@ -306,7 +306,7 @@ header a:hover{
     align-items: flex-start;
     width: 90%;
     max-width: 90%;
-    overflow-y: hidden;
+    overflow: hidden;
 }
 .list_info .list_table{
     z-index: 0;
@@ -365,14 +365,22 @@ header a:hover{
     transition: all 0.5s ease-in-out;
 }
 .list_info .list_table .list_row .list_cell.options a.edit{
-    background: url(../img/btn_edit.png) no-repeat;
+    background: url(../res/btn_edit.png) no-repeat;
     background-size: cover;
 }
 .list_info .list_table .list_row .list_cell.options a.delete{
-    background: url(../img/btn_delete.png) no-repeat;
+    background: url(../res/btn_delete.png) no-repeat;
     background-size: cover;
 }
-.block_info form{
+.list_info .list_table .list_row .list_cell.options a.confirm{
+    background: url(../res/moderation_icon.png) no-repeat;
+    background-size: cover;
+}
+.block_info .list_info .map{
+    width: 800px;
+    height: 495px;
+}
+.block_info .list_info form{
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -386,11 +394,22 @@ header a:hover{
     padding: 10px 10px 10px 0;
     margin: 0 10px 0 10px;
 }
+.block_info .input_NE{
+    cursor: pointer;
+    text-decoration: underline;
+}
+.block_info .input_NE a{
+    color: #1d1d1d;
+}
+.block_info .form_item .input_NE{
+    padding: 15px 0 0;
+}
 .block_info form .form_item label{
     margin-bottom: 5px;
 }
 .block_info form .form_item input,
-.block_info form .form_item select{
+.block_info form .form_item select,
+.block_info form .form_item select option{
     width: 300px;
     padding: 7px 10px 7px 10px;
 }
@@ -418,7 +437,7 @@ header a:hover{
     margin-bottom: -37px;
     height: 40px;
     width: 40px;
-    background: url(../img/btn_pussword.png) no-repeat;
+    background: url(../res/btn_pussword.png) no-repeat;
     background-size: cover;
 }
 .block_info form .form_item a.show:hover{
@@ -426,6 +445,10 @@ header a:hover{
 }
 .block_info .window form .form_item{
     padding: 7px 7px 7px 0;
+}
+.block_info form .form_item.upload_photo,
+.block_info form .form_item.upload_photo input{
+    cursor: pointer;
 }
 .overlay {
     z-index: 15;
@@ -441,14 +464,17 @@ header a:hover{
 .overlay:target {
     display: block;
 }
+.overlay.map {
+    z-index: 16;
+    background-color: rgba(0, 0, 0, 0.9);
+}
 .popup {
     z-index: 20;
     position: absolute;
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    top: -100%;
+    flex-direction: row;
+    justify-content: space-around;
+    top: 0;
     right: 0;
     left: 40%;
     width: 20%;
@@ -473,12 +499,39 @@ header a:hover{
     -o-transition: -o-transform 0.6s ease-out;
     transition: transform 0.6s ease-out;
 }
+.popup.edit_image{
+    min-width: 330px;
+    left: 58%;
+}
+.map_edit{
+    width: 670px;
+    height: 675px;
+    margin: 30px 0;
+}
+.popup.edit_image .preview{
+    display: none;
+    flex-direction: row;
+    justify-content: center;
+    border: 15px solid white;
+    border-radius: 3px;
+    position: absolute;
+    top: -0;
+    left: -210px;
+    z-index: 25;
+}
+.popup.map{
+    height: 700px;
+    width: 700px;
+    left: 48%;
+    -webkit-user-select: none;
+    background-color: white;
+}
 .overlay:target+.popup {
     -webkit-transform: translate(-50%, 0);
     -ms-transform: translate(-50%, 0);
     -o-transform: translate(-50%, 0);
     transform: translate(-50%, 0);
-    top: 10%;
+    top: 0;
 }
 .close {
     position: absolute;
@@ -520,9 +573,4 @@ header a:hover{
     -ms-transform: rotate(360deg);
     -o-transform: rotate(360deg);
     transform: rotate(360deg);
-}
-.block_info div[role=dialog],
-.ui-widget{
-    font-family: Century Gothic, Verdana, Geneva, sans-serif !important;
-    font-size: 15px !important;
 }

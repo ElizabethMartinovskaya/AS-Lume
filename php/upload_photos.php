@@ -1,24 +1,20 @@
 <?php
 require_once 'sql_functions.php';
-/*var_dump($_FILES);
-var_dump($_POST);*/
+require_once 'functions_get_id.php';
 $name = basename($_FILES['Image_src']['name']);
 $tmp_name = $_FILES['Image_src']['tmp_name'];
 $type_file = str_replace('image/','.',$_FILES['Image_src']['type']);
-$upload_dir = '../images/';
-$upload_file = $upload_dir;
 $valid_types = array('image/jpeg','image/jpg');
 $image_info = getimagesize($tmp_name);
 $max_size = 10485760;
-Add_photo($image_info,$name,$tmp_name,$type_file,$upload_dir,$upload_file,$valid_types,$max_size,'Lume System','company',$_POST['description_image'],$image_info[0],$image_info[1],$_POST['Source'],$_POST['type_data'],$_POST['image_NE']);
-function Add_photo($image_info,$name_file,$tmp_name_file,$type_file,$upload_dir,$upload_file,$valid_types,$max_size,$users_name,$type_user,$description_image,$width_image,$height_image,$Source,$type_data,$image_NE){
+Add_photo($image_info,$tmp_name,$type_file,$valid_types,$max_size,'Lume System','Company',$_POST['description_image'],$image_info[0],$image_info[1],$_POST['Source'],$_POST['type_data'],$_POST['image_N'],$_POST['image_E']);
+function Add_photo($image_info,$tmp_name_file,$type_file,$valid_types,$max_size,$users_name,$type_user,$description_image,$width_image,$height_image,$Source,$type_data,$image_N,$image_E){
     $now_date = date('Y-m-d H:i:s');
-    $coordinates = explode(' ', $image_NE);
     $id_author = Get_Id_Author($users_name,$type_user);
     $id_properties = Get_Id_Properties_Image($width_image,$height_image);
     $id_event = Get_Id_Event($Source,$type_data);
     $add_update = sql_update("INSERT INTO `image` (`Image_src`,`id_author`,`description_image`,`id_properties`,`id_event`,`publication_date`,`id_category_image`,`image_N`, `image_E`, `isConfirmed`) 
-                              VALUES ('{$tmp_name_file}','{$id_author}','{$description_image}','{$id_properties}','{$id_event}','{$now_date}',NULL ,'{$coordinates[0]}', '{$coordinates[1]}', '1')");
+                              VALUES ('{$tmp_name_file}','{$id_author}','{$description_image}','{$id_properties}','{$id_event}','{$now_date}',NULL,'{$image_N}','{$image_E}', '1')");
     $id_upload_file = sql_select("SELECT `id_image` FROM `image` WHERE `image`.`Image_src`='{$tmp_name_file}'");
     $id_upload_file = mysqli_fetch_assoc($id_upload_file)['id_image'];
     $Image_src = "images/".$id_upload_file.$type_file;
@@ -36,69 +32,33 @@ function Add_photo($image_info,$name_file,$tmp_name_file,$type_file,$upload_dir,
                 die("Размер файла не должен превышать 10 мегабайт.");
             }
             if (move_uploaded_file($tmp_name_file, '../'.$Image_src)){
+                $url = 'http://35.184.65.83/cgi-bin/uploadpost.py';
+                $data = array(
+                    'image_id' => $id_upload_file,
+                    'file' => $_FILES['Image_src'],
+                    'key' => 'lume'
+                );
+                $options = array(
+                    'http' => array(
+                        'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                        'method'  => 'POST',
+                        'content' => http_build_query($data)
+                    )
+                );
+                $context  = stream_context_create($options);
+                $result = file_get_contents($url, false, $context);
+                if ($result === FALSE) {
+                }
                 echo('Фотография добавлена');
             }
             else {
                 $delete_upload_file = sql_update("DELETE FROM `image` WHERE `id_image`='$id_upload_file'");
                 if (!$delete_upload_file){
-                    echo "Ошибка загрузки изображения";
+                    echo "Ошибка! Фотография не добавлена";
                 }
-                else{
-                    echo("Фотография добавлена");
-                }
+                echo "Ошибка! Фотография не добавлена";
             }
         }
     };
 }
-function Get_Id_Author($users_name,$type_user){
-    $id_author = sql_select("SELECT `id_user` FROM `users`
-                            WHERE `users_name`='{$users_name}'
-                            AND `type_user`='{$type_user}'");
-    return mysqli_fetch_assoc($id_author)['id_user'];
-}
-function Get_Id_Properties_Image($width_image,$height_image){
-    $id_properties_image = sql_select("SELECT `id_propertie` FROM `properties_images`
-                                      WHERE `width_image`='{$width_image}'
-                                      AND `height_image`='{$height_image}'");
-    $id_properties_image = mysqli_fetch_assoc($id_properties_image);
-    if (!$id_properties_image)
-    {
-        sql_update("INSERT INTO `properties_images` (`width_image`,`height_image`) 
-                  VALUES ('{$width_image}', '{$height_image}')");
-        $id_properties_image = mysqli_fetch_assoc(sql_select("SELECT `id_propertie` FROM `properties_images`
-                                                                    WHERE `width_image`='{$width_image}' 
-                                                                    AND `height_image` = '{$height_image}'"));
-    }
-    return $id_properties_image['id_propertie'];
-}
-function Get_Id_Event($Source,$type_data){
-    $id_type = sql_select("SELECT `id_Type` FROM `type_of_data`
-                          WHERE `type_data`='{$type_data}'");
-    if ($id_type = mysqli_fetch_assoc($id_type)['id_Type'])
-    {
-        $result_id_event = sql_select("SELECT `id_event` FROM `event`
-                               WHERE `Source`='{$Source}' 
-                               AND `Type_id_Type` = '{$id_type}'");
-        if(!($result_id_event= mysqli_fetch_assoc($result_id_event))) {
-            sql_update("INSERT INTO `event` (`Source`, `Type_id_Type`) 
-                      VALUES ('{$Source}', '{$id_type}')");
-            $result_id_event = mysqli_fetch_assoc(sql_select("SELECT `id_event` FROM `event`
-                                                            WHERE `Source`='{$Source}' 
-                                                            AND `Type_id_Type` = '{$id_type}'"));
-        }
-    }
-    else
-    {
-        sql_update("INSERT INTO `type_of_data` (`type_data`) 
-                    VALUES ('{$type_data}')");
-        $id_type = mysqli_fetch_assoc(sql_select("SELECT `id_Type` FROM `type_of_data`
-                                                WHERE `type_data`='{$type_data}'"));
-        sql_update("INSERT INTO `event` (`Source`, Type_id_Type) 
-                    VALUES ('{$Source}', '{$id_type['id_type']}')");
-        $result_id_event = mysqli_fetch_assoc(sql_select("SELECT `id_event` FROM `event`
-                               WHERE `Source`='{$Source}' 
-                               AND Type_id_Type = '{$id_type['id_type']}'"));
-    }
 
-    return $result_id_event['id_event'];
-}

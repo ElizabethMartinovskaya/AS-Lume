@@ -4,25 +4,26 @@ require_once 'generation_item.php';
 require_once 'data_of_item.php';
 require_once 'sql_select_query.php';
 require_once 'get_html.php';
+require_once 'paging.inc.php';
 if (!isset($_SESSION))
     session_start();
 if (isset($_POST['current_li'])) {
     $current_li=$_POST['current_li'];
     if ($current_li!=='Настройки'){
         if ($current_li == 'Пользователи'){
-            $result = get_data_from_db($current_li);
+            $result = Get_Data_From_Db($current_li);
         }
         elseif ($current_li == 'Компании') {
-            $result = get_data_from_db($current_li);
+            $result = Get_Data_From_Db($current_li);
         }
         elseif ($current_li == 'Акции') {
-            $result = get_data_from_db($current_li);
+            $result = Get_Data_From_Db($current_li);
         }
         elseif ($current_li == 'Фотографии') {
-            $result = get_data_from_db($current_li);
+            $result = Get_Data_From_Db($current_li);
         }
         elseif ($current_li == "Модерация"){
-            $result = get_data_from_db($current_li);
+            $result = Get_Data_From_Db($current_li);
         }
         echo "<div class='list_table'>";
         $table=$list[$current_li];
@@ -35,30 +36,48 @@ if (isset($_POST['current_li'])) {
         while($result_item = mysqli_fetch_assoc($result)){
             if ($current_li=="Акции"){
                 $name_item=$result_item['stock_name'];
+                $id_item=$result_item['id_stock'];
             }
             elseif ($current_li=="Фотографии" || $current_li=="Модерация"){
                 $name_item=$result_item['Image_src'];
+                $id_item=$result_item['id_image'];
             }
             else{
                 $name_item=$result_item['users_name'];
+                $id_item=$result_item['id_user'];
             }
             echo "<div class='list_row'>";
             $count_item=0;
             foreach ($result_item as $key => $item){
                 $count_item++;
                 if ($count_item!==1){
-                    echo "<div class='list_cell $key'>";
-                    echo $item == NULL? "" : $item;
-                    echo "</div>";
+                    if (strpos($key,"_N")){
+                        $coordinates = $item;
+                    }
+                    elseif (strpos($key,"_E")){
+                        $coordinates .= ' '.$item;
+                        echo "<div class='list_cell NE'><div class='input_NE' id='input_NE'><a href='#popup_map' id ='edit_map' onclick=\"GetMap('view','$coordinates')\">";
+                        echo $coordinates == NULL? "" : $coordinates;
+                        echo "</a></div></div>";
+                    }
+                    else{
+                        echo "<div class='list_cell $key'>";
+                        echo $item == NULL? "" : $item;
+                        echo "</div>";
+                    }
                 }
             }
             echo "<div class='list_cell options'>";
             if ($current_li == 'Пользователи' || $current_li == 'Компании' || $current_li == 'Фотографии'){
-                echo get_operation_btn("Редактировать",$current_li,$name_item);
-                echo get_operation_btn("Удалить",$current_li,$name_item);
+                echo get_operation_btn("Редактировать",$current_li,$name_item,$id_item);
+                echo get_operation_btn("Удалить",$current_li,$name_item,$id_item);
             }
-            else{
-                echo get_operation_btn("Удалить",$current_li,$name_item);
+            elseif ($current_li=='Модерация'){
+                echo get_operation_btn("Подтвердить",$current_li,$name_item,$id_item);
+                echo get_operation_btn("Удалить",$current_li,$name_item,$id_item);
+            }
+            elseif ($current_li=='Акции'){
+                echo get_operation_btn("Удалить",$current_li,$name_item,$id_item);
             }
             echo "</div>";
         }
@@ -101,7 +120,7 @@ elseif (isset($_POST['get_checkbox_list'])){
     if ($current_li!='Настройки') {
         $checkbox_result = "";
         foreach($list[$current_li] as $key => $item) {
-            $checkbox_result .= "<div><input type='checkbox' value=$key id='checkbox_$key'><label for='checkbox_$key' onclick='data_query(this)'>$item</label></div>";
+            $checkbox_result .= "<div><input type='checkbox' value=$key id='checkbox_$key'><label for='checkbox_$key' onclick='DataQuery(this)'>$item</label></div>";
         };
         echo $checkbox_result;
     }
@@ -110,7 +129,7 @@ elseif (isset($_POST['get_search_form'])){
     $current_li=$_POST['get_search_form'];
     $search_result = "";
     echo "<form method='post' id='#search_form'>
-          <input type='search' name='search' placeholder='Поиск...'>
+          <input type='Search' name='Search' placeholder='Поиск...'>
           <select id='search_select'>
           <option>Все поля</option>";
     $option_result = "";
@@ -127,15 +146,17 @@ elseif(isset($_POST["search_items"])) {
     $search_field = $_POST["search_field"];
     $result_table ="";
     $count_suitable_item = 0;
-
     if ($current_li == 'Пользователи') {
-        $result = get_data_from_db($current_li);;
-    } elseif ($current_li == 'Компании') {
-        $result = get_data_from_db($current_li);;
-    } elseif ($current_li == 'Акции') {
-        $result = get_data_from_db($current_li);;
-    } elseif ($current_li == 'Фотографии') {
-        $result = get_data_from_db($current_li);;
+        $result = Get_Data_From_Db($current_li);;
+    }
+    elseif ($current_li == 'Компании') {
+        $result = Get_Data_From_Db($current_li);;
+    }
+    elseif ($current_li == 'Акции') {
+        $result = Get_Data_From_Db($current_li);;
+    }
+    elseif ($current_li == 'Фотографии') {
+        $result = Get_Data_From_Db($current_li);;
     }
 
     $result_table.= "<div class='list_table'>";
@@ -148,11 +169,16 @@ elseif(isset($_POST["search_items"])) {
     $result_table.= "</div>";
     while ($result_item = mysqli_fetch_assoc($result)) {
         if ($current_li == 'Акции') {
-            $name_item = $result_item['stock_name'];
-        } elseif ($current_li == 'Фотографии') {
+            $name_item=$result_item['stock_name'];
+            $id_item=$result_item['id_stock'];
+        }
+        elseif ($current_li == 'Фотографии' || $current_li=='Модерация') {
             $name_item = $result_item['Image_src'];
-        } else {
+            $id_item = $result_item['id_image'];
+        }
+        else {
             $name_item = $result_item['users_name'];
+            $id_item = $result_item['id_user'];
         }
         $is_suitable = false;
         $row = "<div class='list_row'>";
@@ -163,21 +189,37 @@ elseif(isset($_POST["search_items"])) {
                 if (($key == $search_field || $search_field == "Все поля") && !$is_suitable)
                     if (strpos($item, $_POST["search_items"]) !== false)
                         $is_suitable = true;
-                $row .= "<div class='list_cell $key'>";
-                $row .= $item == NULL ? "" : $item;
-                $row .= "</div>";
+                if (strpos($key,"_N")){
+                    $coordinates = $item;
+                }
+                elseif (strpos($key,"_E")){
+                    $coordinates .= ' '.$item;
+                    $row .="<div class='list_cell NE'>";
+                    $row .= $coordinates == NULL? "" : $coordinates;
+                    $row .= "</div>";
+                }
+                else{
+                    $row .= "<div class='list_cell $key'>";
+                    $row .= $item == NULL ? "" : $item;
+                    $row .= "</div>";
+                }
             }
         }
         $row .= "<div class='list_cell options'>";
         if ($current_li == "Пользователи" || $current_li == "Компании") {
-            $row .= get_operation_btn("Редактировать",$current_li,$name_item);
-            $row .= get_operation_btn("Удалить",$current_li,$name_item);
-        } else {
-            $row .= get_operation_btn("Удалить",$current_li,$name_item);
+            $row .= get_operation_btn("Редактировать",$current_li,$name_item,$id_item);
+            $row .= get_operation_btn("Удалить",$current_li,$name_item,$id_item);
+        }
+        elseif ($current_li=='Модерация'){
+            $row .= get_operation_btn("Подтвердить",$current_li,$name_item,$id_item);
+            $row .= get_operation_btn("Удалить",$current_li,$name_item,$id_item);
+        }
+        else {
+            $row .= get_operation_btn("Удалить",$current_li,$name_item,$id_item);
         }
         $row .= "</div>";
         if ($is_suitable) {
-            $result_table.= $row;
+            $result_table .= $row;
             $count_suitable_item++;
         }
     }
